@@ -1,0 +1,4 @@
+su
+/data/local/tmp/launch com.tencent.tmgp.cf /data/local/tmp/libhook.so
+logcat -c
+logcat|grep xmono
