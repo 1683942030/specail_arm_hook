@@ -15,9 +15,6 @@ extern unsigned long _shellcode_end;
 extern unsigned long _hookstub_enter;
 extern unsigned long _hookstub_leave;
 extern unsigned long _old_function_addr;
-extern unsigned long _mutex;
-extern unsigned long _thread_lock;
-extern unsigned long _thread_unlock;
 
 void hook_wrapper(void *symbol, void *replace, void **result)
 {
@@ -59,23 +56,28 @@ int change_page_property(void *pAddress, size_t size)
     return 1;
 }
 
+void new_pthread_mutex_lock(pthread_mutex_t *pMutex)
+{
+	pthread_mutex_lock(pMutex);
+}
+
+void new_pthread_mutex_unlock(pthread_mutex_t *pMutex)
+{
+	pthread_mutex_unlock(pMutex);
+}
 
 void hook(void * target, void * enter, void * leave)
 {
-	//pthread_mutex_t *pMutex = (pthread_mutex_t *)&_mutex;
-	//*(void **)&_thread_lock = pthread_mutex_lock;
-	//*(void **)&_thread_unlock = pthread_mutex_unlock;
 	*(void **)&_hookstub_enter = enter;
 	*(void **)&_hookstub_leave = leave;
-	
-	int shellcodeSize = &_shellcode_end - &_shellcode_start;
+
+	int shellcodeSize = (int)&_shellcode_end - (int)&_shellcode_start;
 	void *pNewShellcode = malloc(shellcodeSize);
-	change_page_property(pNewShellcode, shellcodeSize);
-	
+	change_page_property(pNewShellcode, shellcodeSize);	
 	hook_wrapper(target, pNewShellcode, (void **)&_old_function_addr);
 	memcpy(pNewShellcode, &_shellcode_start, shellcodeSize);
-	
-	LOGI("hook transport addr %08x, size %d", (int)pNewShellcode, shellcodeSize);
+
+	LOGI("hook transport addr %08x, size %d (%08x-%08x)", (int)pNewShellcode, shellcodeSize, (int)&_shellcode_start, (int)&_shellcode_end);
 }
 
 int i=0;
