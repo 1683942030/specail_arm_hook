@@ -1,0 +1,4 @@
+# specail_arm_hook
+将所有函数hook到一个公共区域，并在原始函数调用前后执行enter和leave
+
+解决了多线程和递归调用问题
