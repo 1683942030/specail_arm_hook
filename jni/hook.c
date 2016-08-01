@@ -56,16 +56,6 @@ int change_page_property(void *pAddress, size_t size)
     return 1;
 }
 
-void new_pthread_mutex_lock(pthread_mutex_t *pMutex)
-{
-	pthread_mutex_lock(pMutex);
-}
-
-void new_pthread_mutex_unlock(pthread_mutex_t *pMutex)
-{
-	pthread_mutex_unlock(pMutex);
-}
-
 void hook(void * target, void * enter, void * leave)
 {
 	*(void **)&_hookstub_enter = enter;
@@ -102,8 +92,6 @@ void mainthread()
 		pLibMono=dlopen("libmono.so", RTLD_LAZY);
 		usleep(200000);
 	}while(pLibMono==0);
-	
-	sleep(5);
 	
 	void* mono_runtime_invoke = dlsym(pLibMono, "mono_runtime_invoke");
 	hook(mono_runtime_invoke, stub_start, stub_end);
