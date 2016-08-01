@@ -11,12 +11,6 @@ _shellcode_start:
 	mrs     r11, cpsr
 	mrs		r12, spsr
 	stmfd	sp!, {r11,r12}
-	adr		r12, _old_lr_stack_offset
-	ldr		r11, [r12]
-	adr		r10, _old_lr_stack
-	str		lr,  [r10, r11]
-	add		r11, #4
-	str		r11, [r12]
 	adr     r12, _hookstub_enter
 	ldr		r12, [r12]
     blx     r12
@@ -25,27 +19,27 @@ _shellcode_start:
 	msr		spsr, r12
     ldmfd   sp!, {r0-r12, lr}
 
+	sub		sp, #400
+	push	{lr}
+	add		sp, #404
     adr		r12, _old_function_addr
 	ldr		r12, [r12]
     blx		r12
+	sub		sp, #404
+	pop		{lr}
+	add		sp, #400
 	
-	stmfd   sp!, {r0-r12}
+	stmfd   sp!, {r0-r12, lr}
 	mrs     r11, cpsr
 	mrs		r12, spsr
 	stmfd	sp!, {r11,r12}
 	adr     r12, _hookstub_leave
 	ldr		r12, [r12]
     blx     r12
-	adr		r12, _old_lr_stack_offset
-	ldr		r11, [r12]
-	sub		r11, #4
-	str		r11, [r12]
-	adr		r12, _old_lr_stack
-	ldr		lr, [r12, r11]
 	ldmfd   sp!, {r11, r12}
 	msr     cpsr, r11
 	msr		spsr, r12
-    ldmfd   sp!, {r0-r12}
+    ldmfd   sp!, {r0-r12, lr}
 	
 	bx		lr
 	
@@ -56,21 +50,6 @@ _hookstub_leave:
 .word 0xffffffff
 
 _old_function_addr:
-.word 0xffffffff
-
-_old_lr_stack_offset:
-.word 0x00000000
-
-_old_lr_stack:
-.word 0xffffffff
-.word 0xffffffff
-.word 0xffffffff
-.word 0xffffffff
-.word 0xffffffff
-.word 0xffffffff
-.word 0xffffffff
-.word 0xffffffff
-.word 0xffffffff
 .word 0xffffffff
 
 _shellcode_end:
